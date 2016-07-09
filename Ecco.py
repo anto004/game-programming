@@ -35,6 +35,14 @@ class BouncingBall(ShowBase):
         self.smileyFace2.setPos(60, -70, 0)
         self.smileyFace2.setScale(2)
 
+    def addTitle(text):
+        return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1),
+                            pos=(1.3, -0.95), align=TextNode.ARight, scale=.07)
+
+    def addInstructions(pos, msg):
+        return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1),
+                            pos=(-1.3, pos), align=TextNode.ALeft, scale=.05)
+
     def loadPlanets(self):
         # Here, inside our class, is where we are creating the loadPlanets function
         # For now we are just loading the star-field and sun. In the next step we
@@ -122,7 +130,7 @@ class BouncingBall(ShowBase):
         return Task.cont
     #testing camera position
     def cameraPosition(self, task):
-        self.camera.setPos(0, task.time * -20, 10)
+        self.camera.setPos(0, task.time * 20, 10)
         print "task.time " + str(task.time *30)
         return Task.cont
 
