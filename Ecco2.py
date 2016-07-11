@@ -36,7 +36,7 @@ class EccoGame(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
-        base.setBackgroundColor(0, 0, 255)
+        base.setBackgroundColor(0, 0, 0)
         self.sizescale = 0.6
         self.setupWorld()
         self.setupFloor()
@@ -75,6 +75,15 @@ class EccoGame(ShowBase):
         # Set up the camera
         self.disableMouse()
         self.camera.setPos(self.characterNP.getX(), self.characterNP.getY() + 10, 5)
+        self.setupSound()
+
+    def update(self, task):
+        self.setupSky()
+        self.setUpCamera()
+        self.processInput()
+        dt = globalClock.getDt()
+        self.world.doPhysics(dt, 10, 1 / 180.0)
+        return task.cont
 
     def setupWorld(self):
         # create bullet world
@@ -82,20 +91,39 @@ class EccoGame(ShowBase):
         self.debugNP.show()
 
         self.world = BulletWorld()
-        self.world.setGravity(Vec3(0, 0, -9.81))
+        self.world.setGravity(Vec3(0, 0, -900.81))
         self.world.setDebugNode(self.debugNP.node())
 
+    def setupSky(self):
+        # Load the model for the sky
+        self.sky = loader.loadModel("models/sky/solar_sky_sphere")
+        # Load the texture for the sky.
+        self.sky_tex = loader.loadTexture("models/sky/stars_1k_tex.jpg")
+        # Set the sky texture to the sky model
+        self.sky.setTexture(self.sky_tex, 1)
+        # Parent the sky model to the render node so that the sky is rendered
+        self.sky.reparentTo(self.render)
+        # Scale the size of the sky.
+        self.sky.setScale(40000)
+        self.sky.setPos(self.characterNP.getX(), self.characterNP.getY() + 10000, 0)
+
+    def setupSound(self):
+        # Set up sound
+        mySound = base.loader.loadSfx("sounds/Farm Morning.ogg")
+        self.footsteps = base.loader.loadSfx("sounds/Footsteps_on_Cement-Tim_Fryer-870410055.ogg")
+        mySound.play()
+        mySound.setVolume(1.5)
     def setupFloor(self):
         # Floor
         shape = BulletPlaneShape(Vec3(0, 0, 1), 0)
         floorNP = self.render.attachNewNode(BulletRigidBodyNode('Floor'))
         floorNP.node().addShape(shape)
-        floorNP.setPos(0, 0, -15)
+        floorNP.setPos(0, 0, -300)
         floorNP.setCollideMask(BitMask32.allOn())
         self.world.attachRigidBody(floorNP.node())
 
         #origin = Point3(2, 0, 0)
-        size = Vec3(10, 1000, 1)
+        size = Vec3(10, 10000, 1)
         shape = BulletBoxShape(size * 0.55)
         stairNP = self.render.attachNewNode(BulletRigidBodyNode('Stair%i' % 1))
         stairNP.node().addShape(shape)
@@ -119,7 +147,7 @@ class EccoGame(ShowBase):
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
         #    self.character.setMass(1.0)
         self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setPos(0, 0, 10)
+        self.characterNP.setPos(0, 0, 5)
         #self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
@@ -134,14 +162,6 @@ class EccoGame(ShowBase):
         self.ecco.setH(180)
         self.ecco.setPos(0, 0, -1)
 
-
-    def update(self, task):
-        self.processInput()
-        dt = globalClock.getDt()
-        self.world.doPhysics(dt, 10, 1 / 180.0)
-        #self.ecco.loop('run')
-        self.setUpCamera()
-        return task.cont
 
     def setUpCamera(self):
         # If the camera is too far from ecco, move it closer.
@@ -171,19 +191,27 @@ class EccoGame(ShowBase):
 
         if inputState.isSet('esc'): sys.exit()
         if inputState.isSet('arrow_up'): speed.setY(20.0)
-        if inputState.isSet('arrow_left'):    speed.setX(-20.0)
-        if inputState.isSet('arrow_right'):    speed.setX(20.0)
-        if inputState.isSet('turnLeft'):  omega = 120.0
-        if inputState.isSet('turnRight'): omega = -120.0
+        if inputState.isSet('arrow_left'):
+            speed.setX(-35.0)
+            #omega = 120.0
+        if inputState.isSet('arrow_right'):
+            speed.setX(35.0)
+            #omega = -120.0
 
         if inputState.isSet('cam-left'): self.camera.setX(self.camera, -20 * dt)
         if inputState.isSet('cam-right'): self.camera.setX(self.camera, +20 * dt)
         if inputState.isSet('cam-forward'): self.camera.setY(self.camera, -200 * dt)
         if inputState.isSet('cam-backward'): self.camera.setY(self.camera, +200 * dt)
+
+        if self.isMoving is False:
+            self.ecco.loop("run")
+            self.isMoving = True
         speed.setY(50.0)
+        # self.footsteps.play()
+        # self.footsteps.setVolume(10)
         #self.character.setAngularMovement(omega)
         self.character.setLinearMovement(speed, True)
-
+        print "omega:"+str(omega)
 
 simulation = EccoGame()
 simulation.run()
