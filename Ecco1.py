@@ -108,11 +108,12 @@ class EccoGame(ShowBase):
         self.ecco.reparentTo(self.sphere)
         self.ecco.setScale(1)
 
-        # Create a floater object, which floats 2 units above ralph.  We
+        # Create a floater object, which floats 2 units above ecco.  We
         # use this as a target for the camera to look at.
         self.floater = NodePath(PandaNode("floater"))
         self.floater.reparentTo(self.ecco)
         self.floater.setZ(2.0)
+
 
     def update(self, task):
         self.processInput()
