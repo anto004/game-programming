@@ -36,6 +36,10 @@ def addInstructions(pos, msg):
     return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1),
                         pos=(-1.3, pos), align=TextNode.ALeft, scale=.05)
 
+def addCoinScore(score):
+    return OnscreenText(text=score, style=1, fg=(1, 1, 1, 1),
+                        pos=(-1.3, 10), align=TextNode.ALeft, scale=.05)
+
 class EccoGame(ShowBase):
 
     def __init__(self):
@@ -83,6 +87,7 @@ class EccoGame(ShowBase):
 
         # Set up Coins as Collectables
         self.setupCoins()
+        self.coinsCollected = 0
 
     def update(self, task):
         self.setupSky()
@@ -135,7 +140,7 @@ class EccoGame(ShowBase):
         #origin = Point3(2, 0, 0)
         size = Vec3(10, 10000, 1)
         shape = BulletBoxShape(size * 0.55)
-        stairNP = self.render.attachNewNode(BulletRigidBodyNode('Stair'))
+        stairNP = self.render.attachNewNode(BulletRigidBodyNode('Floor'))
         stairNP.node().addShape(shape)
         stairNP.setPos(0, 0, 0)
         stairNP.setCollideMask(BitMask32.allOn())
@@ -236,9 +241,9 @@ class EccoGame(ShowBase):
             randX = random.uniform(0, 3.5)
             randY = random.randint(0, 50)
             shape = BulletSphereShape(0.75)
-            node = BulletGhostNode('Coin-' + str(i))
-            node.addShape(shape)
-            np = self.render.attachNewNode(node)
+            coinNode = BulletGhostNode('Coin-' + str(i))
+            coinNode.addShape(shape)
+            np = self.render.attachNewNode(coinNode)
             np.setCollideMask(BitMask32.allOff())
             np.setPos(randX, randY, 2)
 
@@ -246,29 +251,39 @@ class EccoGame(ShowBase):
             sphereNp = loader.loadModel('models/smiley.egg')
             sphereNp.reparentTo(np)
             sphereNp.setScale(1)
-            #tex = loader.loadTexture('maps/noise.rgb')
-            #sphereNp.setTexture(tex, 1)
 
-            self.world.attachGhost(node)
-            self.coins.append(node)
-            print "node name:"+ str(node.getName())
+            self.world.attachGhost(coinNode)
+            self.coins.append(coinNode)
+            print "node name:"+ str(coinNode.getName())
 
     def processContacts(self):
         # self.testWithEveryBody()
+
         for coin in self.coins:
-            self.testWithSingleBody(coin)
-            # self.testAllContactingBodies()
+            numOfContacts = self.testWithSingleBody(coin)
+            if numOfContacts == 1:
+                self.coinsCollected += 1
+                print "coins Collected:" + str(self.coinsCollected)
 
     def testWithSingleBody(self, secondNode):
         # test sphere for contacts with secondNode
         contactResult = self.world.contactTestPair(self.character, secondNode)  # returns a BulletContactResult object
-        # for contact in contactResult.getContacts():
-        #     cp = contact.getManifoldPoint()
-        #     node0 = contact.getNode0()
-        #     node1 = contact.getNode1()
-        #     print node0.getName(), node1.getName(), cp.getLocalPointA()
-        if len(contactResult.getContacts()) > 0:
-            print "Ecco is in contact with: ", secondNode.getName()
+
+        if contactResult.getNumContacts() > 0:
+            for contact in contactResult.getContacts():
+                cp = contact.getManifoldPoint()
+                node0 = contact.getNode0()
+                node1 = contact.getNode1()
+                print node0.getName(), node1.getName()
+                print "Removing:" + str(node1.getName())
+                np = self.render.find(node1.getName())
+                np.node().removeAllChildren()
+                self.world.removeGhost(np.node())
+        return contactResult.getNumContacts()
+
+            #self.world.removeGhost(node1)
+        # if len(contactResult.getContacts()) > 0:
+        #     print "Ecco is in contact with: ", secondNode.getName()
 
 
 simulation = EccoGame()
