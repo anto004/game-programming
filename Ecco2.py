@@ -17,10 +17,14 @@ from panda3d.bullet import BulletDebugNode
 from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletCapsuleShape
 from panda3d.bullet import BulletCharacterControllerNode
+from panda3d.bullet import BulletGhostNode
 from panda3d.bullet import ZUp
 import sys
+import random
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from direct.actor.Actor import Actor
+from pandac.PandaModules import loadPrcFileData
+loadPrcFileData('', 'bullet-enable-contact-events true')
 
 
 def addTitle(text):
@@ -53,7 +57,7 @@ class EccoGame(ShowBase):
         inputState.watchWithModifiers('arrow_left', 'arrow_left')
         inputState.watchWithModifiers('arrow_right', 'arrow_right')
         inputState.watchWithModifiers('pause', 'p')
-        inputState.watchWithModifiers('jump', 'space')
+        inputState.watchWithModifiers('space', 'space')
 
         inputState.watchWithModifiers('cam-left', 'z')
         inputState.watchWithModifiers('cam-right', 'x')
@@ -77,10 +81,14 @@ class EccoGame(ShowBase):
         self.camera.setPos(self.characterNP.getX(), self.characterNP.getY() + 10, 5)
         self.setupSound()
 
+        # Set up Coins as Collectables
+        self.setupCoins()
+
     def update(self, task):
         self.setupSky()
-        self.setUpCamera()
+        #self.setUpCamera()
         self.processInput()
+        self.processContacts()
         dt = globalClock.getDt()
         self.world.doPhysics(dt, 10, 1 / 180.0)
         return task.cont
@@ -113,6 +121,8 @@ class EccoGame(ShowBase):
         self.footsteps = base.loader.loadSfx("sounds/Footsteps_on_Cement-Tim_Fryer-870410055.ogg")
         mySound.play()
         mySound.setVolume(1.5)
+        mySound.setLoop(True)
+
     def setupFloor(self):
         # Floor
         shape = BulletPlaneShape(Vec3(0, 0, 1), 0)
@@ -125,7 +135,7 @@ class EccoGame(ShowBase):
         #origin = Point3(2, 0, 0)
         size = Vec3(10, 10000, 1)
         shape = BulletBoxShape(size * 0.55)
-        stairNP = self.render.attachNewNode(BulletRigidBodyNode('Stair%i' % 1))
+        stairNP = self.render.attachNewNode(BulletRigidBodyNode('Stair'))
         stairNP.node().addShape(shape)
         stairNP.setPos(0, 0, 0)
         stairNP.setCollideMask(BitMask32.allOn())
@@ -145,7 +155,7 @@ class EccoGame(ShowBase):
         shape = BulletCapsuleShape(w, h - 2 * w, ZUp)
 
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
-        #    self.character.setMass(1.0)
+        #self.character.setMass(1.0)
         self.characterNP = self.render.attachNewNode(self.character)
         self.characterNP.setPos(0, 0, 5)
         #self.characterNP.setH(45)
@@ -197,21 +207,69 @@ class EccoGame(ShowBase):
         if inputState.isSet('arrow_right'):
             speed.setX(35.0)
             #omega = -120.0
+        if inputState.isSet('space'):
+            self.jump()
 
         if inputState.isSet('cam-left'): self.camera.setX(self.camera, -20 * dt)
         if inputState.isSet('cam-right'): self.camera.setX(self.camera, +20 * dt)
         if inputState.isSet('cam-forward'): self.camera.setY(self.camera, -200 * dt)
         if inputState.isSet('cam-backward'): self.camera.setY(self.camera, +200 * dt)
 
-        if self.isMoving is False:
-            self.ecco.loop("run")
-            self.isMoving = True
-        speed.setY(50.0)
+        #Make Ecco run
+        # if self.isMoving is False:
+        #     self.ecco.loop("run")
+        #     self.isMoving = True
+        # speed.setY(50.0)
         # self.footsteps.play()
         # self.footsteps.setVolume(10)
         #self.character.setAngularMovement(omega)
         self.character.setLinearMovement(speed, True)
-        print "omega:"+str(omega)
+
+    def jump(self):
+        self.character.setMaxJumpHeight(5.0)
+        self.character.setJumpSpeed(10.0)
+        self.character.doJump()
+
+    def setupCoins(self):
+        self.coins = []
+        for i in range(5):
+            randX = random.uniform(0, 3.5)
+            randY = random.randint(0, 50)
+            shape = BulletSphereShape(0.75)
+            node = BulletGhostNode('Coin-' + str(i))
+            node.addShape(shape)
+            np = self.render.attachNewNode(node)
+            np.setCollideMask(BitMask32.allOff())
+            np.setPos(randX, randY, 2)
+
+            #Adding sphere model
+            sphereNp = loader.loadModel('models/smiley.egg')
+            sphereNp.reparentTo(np)
+            sphereNp.setScale(1)
+            #tex = loader.loadTexture('maps/noise.rgb')
+            #sphereNp.setTexture(tex, 1)
+
+            self.world.attachGhost(node)
+            self.coins.append(node)
+            print "node name:"+ str(node.getName())
+
+    def processContacts(self):
+        # self.testWithEveryBody()
+        for coin in self.coins:
+            self.testWithSingleBody(coin)
+            # self.testAllContactingBodies()
+
+    def testWithSingleBody(self, secondNode):
+        # test sphere for contacts with secondNode
+        contactResult = self.world.contactTestPair(self.character, secondNode)  # returns a BulletContactResult object
+        # for contact in contactResult.getContacts():
+        #     cp = contact.getManifoldPoint()
+        #     node0 = contact.getNode0()
+        #     node1 = contact.getNode1()
+        #     print node0.getName(), node1.getName(), cp.getLocalPointA()
+        if len(contactResult.getContacts()) > 0:
+            print "Ecco is in contact with: ", secondNode.getName()
+
 
 simulation = EccoGame()
 simulation.run()

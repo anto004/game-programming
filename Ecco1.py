@@ -18,7 +18,6 @@ import sys
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from direct.actor.Actor import Actor
 
-
 def addTitle(text):
     return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1),
                         pos=(1.3, -0.95), align=TextNode.ARight, scale=.07)
