@@ -1,4 +1,4 @@
-from direct.gui.OnscreenText import OnscreenText, TextNode
+from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from math import pi, sin, cos
@@ -23,7 +23,7 @@ import sys
 import random
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from direct.actor.Actor import Actor
-from pandac.PandaModules import loadPrcFileData
+from pandac.PandaModules import TextNode, loadPrcFileData
 loadPrcFileData('', 'bullet-enable-contact-events true')
 
 
@@ -37,7 +37,7 @@ def addInstructions(pos, msg):
                         pos=(-1.3, pos), align=TextNode.ALeft, scale=.05)
 
 def addCoinScore(score):
-    return OnscreenText(text="Coins: ", style=1, fg=(1, 1, 1, 1),
+    return OnscreenText(text="Coins:" + str(score), style=1, fg=(1, 1, 1, 1),
                         pos=(0, 0.95), align=TextNode.ALeft, scale=.05)
 
 class EccoGame(ShowBase):
@@ -55,7 +55,6 @@ class EccoGame(ShowBase):
         self.inst2 = addInstructions(0.90, "[Left key]: Turn Ecco Left")
         self.inst3 = addInstructions(0.85, "[Right key]: Turn Ecco Right")
         self.inst4 = addInstructions(0.80, "[Up key]: Jump Ecco")
-        self.inst5 = addCoinScore("score")
 
         inputState.watchWithModifiers('esc', 'escape')
         inputState.watchWithModifiers('w', 'w')
@@ -75,7 +74,7 @@ class EccoGame(ShowBase):
         # Game state variables
         self.isMoving = False
 
-        # Create a floater object, which floats 2 units above ralph.  We
+        # Create a floater object, which floats 2 units above ecco.  We
         # use this as a target for the camera to look at.
 
         self.floater = NodePath(PandaNode("floater"))
@@ -87,20 +86,24 @@ class EccoGame(ShowBase):
         self.camera.setPos(self.characterNP.getX(), self.characterNP.getY() + 10, 5)
         self.setupSound()
 
+        #coins variables
+        self.coinsCollected = 0
+        self.dictOfCoins = {}
+
         # Set up Coins as Collectables
         self.setupCoins()
 
         #Set up Obstacles
         self.setupObstacles()
 
-        self.coinsCollected = 0
-        self.dictOfCoins = {}
 
     def update(self, task):
         self.setupSky()
         self.setUpCamera()
         self.processInput()
         self.processContacts()
+        #addCoinScore(self.coinsCollected)
+        self.coinScoreDisplay()
         self.checkIfEccoDied()
         dt = globalClock.getDt()
         #self.world.doPhysics(dt, 10, 1 / 180.0)
@@ -285,6 +288,16 @@ class EccoGame(ShowBase):
 
 
     def setupCoins(self):
+        #display coins = 0
+        textN = TextNode('coin-score')
+        textN.setText(str("Coins: " + str(self.coinsCollected)))
+        textN.setSlant(0.1)
+        # textNp.node().setGlyphShift(1.0)
+        textNodePath = self.aspect2d.attachNewNode(textN)
+        textNodePath.setPos(0, 0.95, 0.9)
+        textNodePath.setScale(0.08)
+
+        #coins
         self.coins = []
         for i in range(10):
             randX = random.uniform(-3.5, 3.5)
@@ -312,10 +325,17 @@ class EccoGame(ShowBase):
 
         for coin in self.coins:
             self.testWithSingleBody(coin)
-            for key in self.dictOfCoins:
-                x = set(key)
-                #print "length of x" + str(len(x) - 1)
-                self.coinsCollected = len(x) - 1
+        #     for key in self.dictOfCoins:
+        #         x = set(key)
+        #         #print "length of x" + str(len(x) - 1)
+        #         #self.coinsCollected = len(x) - 1
+        # for key in self.dictOfCoins:
+        #     x = set(key)
+        #     print "Value of key in dictOfCoins:"+ str(x)
+        # print "Value of dictOfCoins:"
+        print self.dictOfCoins
+        self.coinsCollected = len(self.dictOfCoins)
+        print "Value of coinsCollected:"+str(self.coinsCollected)
         #self.CoinsScore = addCoinScore(str(self.coinsCollected))
         #print self.coinsCollected
 
@@ -336,7 +356,6 @@ class EccoGame(ShowBase):
                 self.world.removeGhost(np.node())
 
     def setupObstacles(self):
-
         # Obstacle
         origin = Point3(2, 0, 0)
         size = Vec3(3, 4.75, 3.5)
@@ -386,6 +405,12 @@ class EccoGame(ShowBase):
         pos = self.characterNP.getPos()
         if pos.getZ() < -50.0:
             sys.exit(1)
+
+    def coinScoreDisplay(self):
+        textNp = self.aspect2d.find('coin-score')
+        textNp.node().clearText()
+        textNp.node().setText(str("Coins: " + str(self.coinsCollected)))
+
 
 
 simulation = EccoGame()
