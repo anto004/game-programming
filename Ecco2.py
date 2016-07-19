@@ -44,7 +44,7 @@ class EccoGame(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
-        base.setBackgroundColor(0, 0, 0)
+        #base.setBackgroundColor(0, 0, 0)
         self.sizescale = 0.6
         self.setupWorld()
         self.setupFloor()
@@ -77,9 +77,9 @@ class EccoGame(ShowBase):
         # Create a floater object, which floats 2 units above ecco.  We
         # use this as a target for the camera to look at.
 
-        self.floater = NodePath(PandaNode("floater"))
-        self.floater.reparentTo(self.characterNP)
-        self.floater.setZ(2.0)
+        # self.floater = NodePath(PandaNode("floater"))
+        # self.floater.reparentTo(self.characterNP)
+        # self.floater.setZ(2.0)
 
         # Set up the camera
         self.disableMouse()
@@ -113,7 +113,7 @@ class EccoGame(ShowBase):
     def setupWorld(self):
         # create bullet world
         self.debugNP = self.render.attachNewNode(BulletDebugNode('Debug'))
-        #self.debugNP.show()
+        self.debugNP.show()
 
         self.world = BulletWorld()
         self.world.setGravity(Vec3(0, 0, -9.81))
@@ -149,7 +149,7 @@ class EccoGame(ShowBase):
         self.milkyWay.reparentTo(self.milkyWayNp)
         self.milkyWay.setScale(200)
         self.milkyWay.setPos(x + 2000, y + 10000, z - 500)
-        #
+
         # #milkyway 2
         self.milkyWay_2 = loader.loadModel("models/sky/planet_sphere")
         self.milkWay_2_tex = loader.loadTexture("models/sky/milkyway_2_tex.jpg")
@@ -237,7 +237,7 @@ class EccoGame(ShowBase):
         # If the camera is too far from ecco, move it closer.
         # If the camera is too close to ecco, move it farther.
         camvec = self.characterNP.getPos() - self.camera.getPos()
-        camvec.setZ(0)
+        #camvec.setZ(0.0)
         camdist = camvec.length()
         camvec.normalize()
         if camdist > 10.0:
@@ -246,7 +246,7 @@ class EccoGame(ShowBase):
         if camdist < 5.0:
             self.camera.setPos(self.camera.getPos() - camvec * (5 - camdist))
             camdist = 5.0
-        self.camera.lookAt(self.floater)
+        #self.camera.lookAt(self.floater)
 
 
     def processInput(self):
