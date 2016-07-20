@@ -105,6 +105,7 @@ class coins(ShowBase):
 
     def setupCoinOnPlank(self):
         # Plane
+        size = Vec3(2.5, 0.6, 0.3)
         shape = BulletBoxShape(Vec3(1, 0.1, 0.1))
         node = BulletRigidBodyNode('Box')
         node.setMass(0)
@@ -113,6 +114,14 @@ class coins(ShowBase):
         np.setPos(0, 0, 0)
         np.setR(0)
         self.world.attachRigidBody(node)
+
+        modelNP = loader.loadModel('models/box.egg')
+        modelNP_tex = loader.loadTexture("models/sky/moon_tex.jpg")
+        modelNP.setTexture(modelNP_tex, 1)
+        modelNP.reparentTo(np)
+        modelNP.setPos(-1, 0, -1)
+        modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
+        modelNP.setScale(size)
 
 
         # # Boxes

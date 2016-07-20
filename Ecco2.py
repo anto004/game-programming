@@ -89,9 +89,13 @@ class EccoGame(ShowBase):
         #coins variables
         self.coinsCollected = 0
         self.dictOfCoins = {}
+        self.coins = []
 
         # Set up Coins as Collectables
         self.setupCoins()
+
+        # Set up Floaters with coins
+        self.setupFloaters()
 
         #Set up Obstacles
         self.setupObstacles()
@@ -207,6 +211,54 @@ class EccoGame(ShowBase):
         modelNP.setScale(size)
         self.world.attachRigidBody(stairNP.node())
 
+    def setupFloaters(self):
+        size = Vec3(5.5, 5.5, 0.3)
+        for i in range(5):
+            randX = random.randrange(-8, 8, 6)
+            randY = random.randint(0, 1000)
+            shape = BulletBoxShape(size * 0.55)
+            node = BulletRigidBodyNode('Floater')
+            node.setMass(0)
+            node.addShape(shape)
+            np = self.render.attachNewNode(node)
+            # np.setPos(9, 30, 3)
+            np.setPos(randX, randY, 4)
+            np.setR(0)
+            self.world.attachRigidBody(node)
+
+            dummyNp = self.render.attachNewNode('milkyway')
+            dummyNp.setPos(randX, randY, 4)
+
+            modelNP = loader.loadModel('models/box.egg')
+            modelNP_tex = loader.loadTexture("models/sky/moon_tex.jpg")
+            modelNP.setTexture(modelNP_tex, 1)
+            modelNP.reparentTo(dummyNp)
+            modelNP.setPos(-1, 0, -1)
+            modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
+            modelNP.setScale(size)
+            #dummyNp.hprInterval(2.5, Vec3(360, 0, 0)).loop()
+
+            # Put A Coin On the Floater
+            shape = BulletSphereShape(0.75)
+            coinNode = BulletGhostNode('FloaterCoin-' + str(i))
+            coinNode.addShape(shape)
+            np = self.render.attachNewNode(coinNode)
+            np.setCollideMask(BitMask32.allOff())
+            # np.setPos(randX, randY, 2)
+            np.setPos(randX, randY, 5.0)
+
+            # Adding sphere model
+            sphereNp = loader.loadModel('models/smiley.egg')
+            sphereNp_tex = loader.loadTexture("models/sky/coin_2_tex.jpg")
+            sphereNp.setTexture(sphereNp_tex, 1)
+            sphereNp.reparentTo(np)
+            sphereNp.setScale(0.85)
+            sphereNp.hprInterval(1.5, Vec3(360, 0, 0)).loop()
+
+            self.world.attachGhost(coinNode)
+            self.coins.append(coinNode)
+            print "node name:" + str(coinNode.getName())
+
 
     def setupCharacter(self):
         # Character
@@ -298,7 +350,6 @@ class EccoGame(ShowBase):
         textNodePath.setScale(0.08)
 
         #coins
-        self.coins = []
         for i in range(10):
             randX = random.uniform(-3.5, 3.5)
             randY = random.randint(0, 1000)
@@ -315,6 +366,7 @@ class EccoGame(ShowBase):
             sphereNp.setTexture(sphereNp_tex, 1)
             sphereNp.reparentTo(np)
             sphereNp.setScale(0.85)
+            sphereNp.hprInterval(2.5, Vec3(360, 0, 0)).loop()
 
             self.world.attachGhost(coinNode)
             self.coins.append(coinNode)
