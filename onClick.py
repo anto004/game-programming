@@ -1,3 +1,8 @@
+import direct.directbase.DirectStart
+from direct.gui.OnscreenText import OnscreenText
+from direct.gui.DirectGui import *
+
+from panda3d.core import TextNode
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
@@ -23,6 +28,7 @@ import sys
 import random
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from direct.actor.Actor import Actor
+from direct.gui.DirectGui import *
 from pandac.PandaModules import TextNode, loadPrcFileData
 loadPrcFileData('', 'bullet-enable-contact-events true')
 
@@ -538,7 +544,28 @@ class EccoGame(ShowBase):
         textNp.node().clearText()
         textNp.node().setText(str("Coins: " + str(self.coinsCollected)))
 
+# Add some text
+bk_text = "This is my Demo"
+textObject = OnscreenText(text=bk_text, pos=(0.95, -0.95),
+                          scale=0.07, fg=(1, 0.5, 0.5, 1), align=TextNode.ACenter, mayChange=1)
 
 
-simulation = EccoGame()
-simulation.run()
+# Callback function to set  text
+def setText():
+    # bk_text = "Button Clicked"
+    # textObject.setText(bk_text)
+
+    simulation = EccoGame()
+    simulation.run()
+
+
+
+
+# Add button
+b = DirectButton(text=("OK", "click!", "rolling over", "disabled"), scale=.05, command=setText)
+level1Button = DirectButton(text=("Level 1"), scale=.1, pos=(0, 0, 0.2), command=setText)
+
+level2Button = DirectButton(text=("Level 2"), scale=.1, pos=(0, 0, 0), command=setText)
+
+# Run the tutorial
+run()
