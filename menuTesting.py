@@ -74,15 +74,18 @@ class EccoGame(ShowBase):
         textNodePath.setPos(-0.4, 1.5, 0.5)
         textNodePath.setScale(0.2)
 
-        level1Button = DirectButton(text=("Level 1"), scale=.1, pos=(0, 0, 0.2), command=self.level1)
+        self.level1Button = DirectButton(text=("Level 1"), scale=.1, pos=(0, 0, 0.2), command=self.level1)
 
-        level2Button = DirectButton(text=("Level 2"), scale=.1, pos=(0, 0, 0), command=self.level2)
+        self.level2Button = DirectButton(text=("Level 2"), scale=.1, pos=(0, 0, 0), command=self.level2)
 
 
 
     def level1(self):
         titleNp = self.aspect2d.find('game-title')
         titleNp.removeNode()
+        self.level1Button.destroy()
+        self.level2Button.destroy()
+
         # base.setBackgroundColor(0, 0, 0)
         # self.levelScreenDisplay()
         self.sizescale = 0.6
