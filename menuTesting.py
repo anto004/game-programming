@@ -252,6 +252,9 @@ class EccoGame(ShowBase):
         footsteps.play()
         footsteps.setVolume(0.8)
         footsteps.setLoop(True)
+        self.jumpSound = base.loader.loadSfx("sounds/Jump-SoundBible.com-1007297584.wav")
+        self.jumpSound.setVolume(0.2)
+        self.collectSound = base.loader.loadSfx("sounds/pin_dropping-Brian_Rocca-2084700791.wav")
 
 
     def setupFloor(self):
@@ -356,7 +359,6 @@ class EccoGame(ShowBase):
 
     def processInput(self, dt):
         speed = Vec3(0, 0, 0)
-        self.jumpSound = base.loader.loadSfx("sounds/Jump - SoundBible.com - 1007297584.wav")
         if inputState.isSet('esc'): sys.exit()
         if inputState.isSet('w'): speed.setY(35.0)
         if inputState.isSet('arrow_left'): speed.setX(-35.0)
@@ -364,7 +366,9 @@ class EccoGame(ShowBase):
         if inputState.isSet('space'):
             self.jump()
             self.jumpSound.play()
-        if inputState.isSet('arrow_up'): self.jump()
+        if inputState.isSet('arrow_up'):
+            self.jump()
+            self.jumpSound.play()
         if inputState.isSet('cam-left'): self.camera.setX(self.camera, -20 * dt)
         if inputState.isSet('cam-right'): self.camera.setX(self.camera, +20 * dt)
         if inputState.isSet('cam-forward'): self.camera.setY(self.camera, -200 * dt)
@@ -430,6 +434,7 @@ class EccoGame(ShowBase):
         contactResult = self.world.contactTestPair(self.character, secondNode)
 
         if contactResult.getNumContacts() > 0:
+            self.collectSound.play()
             for contact in contactResult.getContacts():
                 cp = contact.getManifoldPoint()
                 node0 = contact.getNode0()
@@ -489,8 +494,27 @@ class EccoGame(ShowBase):
 
     def checkIfEccoDied(self):
         print "position" + str(self.pos.getY())
-        if self.pos.getZ() < -50.0:
+        if self.pos.getZ() > -50.0 and self.pos.getZ() < 0.0:
+            title = "Ecco Died"
+            levelCompleteN = TextNode('ecco-died')
+            font = loader.loadFont("font/Caveman.ttf")
+            levelCompleteN.setFont(font)
+            levelCompleteN.setText(title)
+            levelCompleteN.setTextColor(1, 1, 1, 1)
+            levelCompleteN.setSlant(0.1)
+            levelCompleteN.setShadow(0.03)
+            levelCompleteN.setShadowColor(0, 0, 200, 1)
+            # levelN.setFrameAsMargin(0, 0, 0, 0)
+            levelCompleteN.setFrameColor(200, 0, 0, 1)
+            levelCompleteN.setFrameLineWidth(5.0)
+            # textNp.node().setGlyphShift(1.0)
+            textNodePath = self.aspect2d.attachNewNode(levelCompleteN)
+            textNodePath.setPos(-0.6, 1.5, 0.5)
+            textNodePath.setScale(0.2)
+
+        elif self.pos.getZ() < -50.0:
             sys.exit(1)
+
         elif self.pos.getY() > 1300.0:
             title = "Level 1 \n Complete"
             levelCompleteN = TextNode('level-complete')
@@ -724,6 +748,10 @@ class EccoGame(ShowBase):
         footsteps.play()
         footsteps.setVolume(0.8)
         footsteps.setLoop(True)
+        self.jumpSound2 = base.loader.loadSfx("sounds/Jump-SoundBible.com-1007297584.wav")
+        self.jumpSound2.setVolume(0.2)
+        self.collectSound = base.loader.loadSfx("sounds/pin_dropping-Brian_Rocca-2084700791.wav")
+
     def setupFloor2(self):
         size = Vec3(7.5, 3000, 1.81818)
         shape = BulletBoxShape(size * 0.55)
@@ -769,8 +797,12 @@ class EccoGame(ShowBase):
         if inputState.isSet('w'): speed.setY(35.0)
         if inputState.isSet('arrow_left'): speed.setX(-35.0)
         if inputState.isSet('arrow_right'): speed.setX(35.0)
-        if inputState.isSet('space'): self.jump2()
-        if inputState.isSet('arrow_up'): self.jump2()
+        if inputState.isSet('space'):
+            self.jump2()
+            self.jumpSound2.play()
+        if inputState.isSet('arrow_up'):
+            self.jump2()
+            self.jumpSound2.play()
         if inputState.isSet('cam-left'): self.camera.setX(self.camera, -20 * dt)
         if inputState.isSet('cam-right'): self.camera.setX(self.camera, +20 * dt)
         if inputState.isSet('cam-forward'): self.camera.setY(self.camera, -200 * dt)
@@ -934,6 +966,7 @@ class EccoGame(ShowBase):
         contactResult = self.world2.contactTestPair(self.character2, secondNode)
 
         if contactResult.getNumContacts() > 0:
+            self.collectSound.play()
             for contact in contactResult.getContacts():
                 cp = contact.getManifoldPoint()
                 node0 = contact.getNode0()
@@ -947,9 +980,29 @@ class EccoGame(ShowBase):
     def checkIfEccoDied2(self):
         print "position" + str(self.pos2.getY())
         if self.pos2.getZ() < -50.0:
-            sys.exit(1)
+            count = 300
+            while count < 0:
+                title = "Ecco Died"
+                levelCompleteN = TextNode('ecco-died')
+                font = loader.loadFont("font/CameoAppearance.ttf")
+                levelCompleteN.setFont(font)
+                levelCompleteN.setText(title)
+                levelCompleteN.setTextColor(1, 1, 1, 1)
+                levelCompleteN.setSlant(0.1)
+                levelCompleteN.setShadow(0.03)
+                levelCompleteN.setShadowColor(0, 0, 200, 1)
+                # levelN.setFrameAsMargin(0, 0, 0, 0)
+                levelCompleteN.setFrameColor(200, 0, 0, 1)
+                levelCompleteN.setFrameLineWidth(5.0)
+                # textNp.node().setGlyphShift(1.0)
+                textNodePath = self.aspect2d.attachNewNode(levelCompleteN)
+                textNodePath.setPos(-0.6, 1.5, 0.5)
+                textNodePath.setScale(0.2)
+                print count
+                count = count - 1
+            #sys.exit(1)
         elif self.pos2.getY() > 1300.0:
-            title = "Level 1 \n Complete"
+            title = "Level 2 \n Complete"
             levelCompleteN = TextNode('level-complete')
             font = loader.loadFont("font/Caveman.ttf")
             levelCompleteN.setFont(font)
