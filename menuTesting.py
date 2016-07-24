@@ -356,11 +356,14 @@ class EccoGame(ShowBase):
 
     def processInput(self, dt):
         speed = Vec3(0, 0, 0)
+        self.jumpSound = base.loader.loadSfx("sounds/Jump - SoundBible.com - 1007297584.wav")
         if inputState.isSet('esc'): sys.exit()
         if inputState.isSet('w'): speed.setY(35.0)
         if inputState.isSet('arrow_left'): speed.setX(-35.0)
         if inputState.isSet('arrow_right'): speed.setX(35.0)
-        if inputState.isSet('space'): self.jump()
+        if inputState.isSet('space'):
+            self.jump()
+            self.jumpSound.play()
         if inputState.isSet('arrow_up'): self.jump()
         if inputState.isSet('cam-left'): self.camera.setX(self.camera, -20 * dt)
         if inputState.isSet('cam-right'): self.camera.setX(self.camera, +20 * dt)
@@ -376,11 +379,7 @@ class EccoGame(ShowBase):
             speed.setY(0.0)
         else:
             speed.setY(40.0)
-            #self.footsteps.play()
 
-
-        # self.footsteps.setVolume(150)
-        # self.character.setAngularMovement(omega)
         self.character.setLinearMovement(speed, True)
 
     def jump(self):
