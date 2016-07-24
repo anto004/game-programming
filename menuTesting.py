@@ -695,6 +695,20 @@ class EccoGame(ShowBase):
         self.mars.setScale(200)
         self.mars.setPos(x + 3000, y + 10000, z + 500)
 
+    def setUpCamera(self):
+        # If the camera is too far from ecco, move it closer.
+        # If the camera is too close to ecco, move it farther.
+        camvec = self.characterNP.getPos() - self.camera.getPos()
+        camvec.setZ(0.0)
+        camdist = camvec.length()
+        camvec.normalize()
+        if camdist > 10.0:
+            self.camera.setPos(self.camera.getPos() + camvec * (camdist - 40))
+            camdist = 10.0
+        if camdist < 5.0:
+            self.camera.setPos(self.camera.getPos() - camvec * (35 - camdist))
+            camdist = 5.0
+
     def setupSound(self):
         # Set up sound
         mySound = base.loader.loadSfx("sounds/Farm Morning.ogg")
@@ -720,54 +734,6 @@ class EccoGame(ShowBase):
         modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
         modelNP.setScale(size)
 
-    def setupFloaters(self):
-        size = Vec3(3.5, 5.5, 0.3)
-        for i in range(3):
-            randX = random.randrange(-6, 6, 10)
-            randY = random.randint(10, 1000)
-            # randY = random.randint(1000, 1500)
-            shape = BulletBoxShape(size * 0.55)
-            node = BulletRigidBodyNode('Floater')
-            node.setMass(0)
-            node.addShape(shape)
-            np = self.render.attachNewNode(node)
-            # np.setPos(9, 30, 3)
-            np.setPos(randX, randY, 6)
-            np.setR(0)
-            self.world.attachRigidBody(node)
-
-            dummyNp = self.render.attachNewNode('milkyway')
-            dummyNp.setPos(randX, randY, 6)
-
-            modelNP = loader.loadModel('models/box.egg')
-            modelNP_tex = loader.loadTexture("models/sky/moon_tex.jpg")
-            modelNP.setTexture(modelNP_tex, 1)
-            modelNP.reparentTo(dummyNp)
-            modelNP.setPos(-1, 0, -1)
-            modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
-            modelNP.setScale(size)
-            # dummyNp.hprInterval(2.5, Vec3(360, 0, 0)).loop()
-
-            # Put A Coin On the Floater
-            shape = BulletSphereShape(0.75)
-            coinNode = BulletGhostNode('FloaterCoin-' + str(i))
-            coinNode.addShape(shape)
-            np = self.render.attachNewNode(coinNode)
-            np.setCollideMask(BitMask32.allOff())
-            # np.setPos(randX, randY, 2)
-            np.setPos(randX, randY, 7.0)
-
-            # Adding sphere model
-            sphereNp = loader.loadModel('models/smiley.egg')
-            sphereNp_tex = loader.loadTexture("models/sky/coin_2_tex.jpg")
-            sphereNp.setTexture(sphereNp_tex, 1)
-            sphereNp.reparentTo(np)
-            sphereNp.setScale(0.85)
-            sphereNp.hprInterval(1.5, Vec3(360, 0, 0)).loop()
-
-            self.world.attachGhost(coinNode)
-            self.coins.append(coinNode)
-            print "node name:" + str(coinNode.getName())
 
     def setupCharacter(self):
         # Character
@@ -789,19 +755,6 @@ class EccoGame(ShowBase):
         self.ecco.setScale(0.7048)
         self.ecco.setH(180)
 
-    def setUpCamera(self):
-        # If the camera is too far from ecco, move it closer.
-        # If the camera is too close to ecco, move it farther.
-        camvec = self.characterNP.getPos() - self.camera.getPos()
-        camvec.setZ(0.0)
-        camdist = camvec.length()
-        camvec.normalize()
-        if camdist > 10.0:
-            self.camera.setPos(self.camera.getPos() + camvec * (camdist - 40))
-            camdist = 10.0
-        if camdist < 5.0:
-            self.camera.setPos(self.camera.getPos() - camvec * (35 - camdist))
-            camdist = 5.0
 
     def processInput(self, dt):
         speed = Vec3(0, 0, 0)
@@ -869,25 +822,6 @@ class EccoGame(ShowBase):
             self.coins.append(coinNode)
             print "node name:" + str(coinNode.getName())
 
-    def processContacts(self):
-        for coin in self.coins:
-            self.testWithSingleBody(coin)
-
-        self.coinsCollected = len(self.dictOfCoins)
-
-    def testWithSingleBody(self, secondNode):
-        contactResult = self.world.contactTestPair(self.character, secondNode)
-
-        if contactResult.getNumContacts() > 0:
-            for contact in contactResult.getContacts():
-                cp = contact.getManifoldPoint()
-                node0 = contact.getNode0()
-                node1 = contact.getNode1()
-                self.dictOfCoins[node1.getName()] = 1
-                np = self.render.find(node1.getName())
-                np.node().removeAllChildren()
-                self.world.removeGhost(np.node())
-
     def setupObstacles(self):
         # Obstacle
         origin = Point3(2, 0, 0)
@@ -935,6 +869,76 @@ class EccoGame(ShowBase):
             modelNP.setPos(-size_2.x / 2.0, -size_2.y / 2.0, -size_2.z / 2.0)
             modelNP.setScale(size_2)
             self.world.attachRigidBody(ObstacleNP.node())
+
+    def setupFloaters(self):
+        size = Vec3(3.5, 5.5, 0.3)
+        randNum = random.sample(range(10, 1500, 500), 3)
+        for i in range(3):
+            randX = random.randrange(-6, 6, 10)
+            randY = float(randNum[i])
+            # randY = random.randint(1000, 1500)
+            shape = BulletBoxShape(size * 0.55)
+            node = BulletRigidBodyNode('Floater')
+            node.setMass(0)
+            node.addShape(shape)
+            np = self.render.attachNewNode(node)
+            # np.setPos(9, 30, 3)
+            np.setPos(randX, randY, 6)
+            np.setR(0)
+            self.world.attachRigidBody(node)
+
+            dummyNp = self.render.attachNewNode('milkyway')
+            dummyNp.setPos(randX, randY, 6)
+
+            modelNP = loader.loadModel('models/box.egg')
+            modelNP_tex = loader.loadTexture("models/sky/moon_tex.jpg")
+            modelNP.setTexture(modelNP_tex, 1)
+            modelNP.reparentTo(dummyNp)
+            modelNP.setPos(-1, 0, -1)
+            modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
+            modelNP.setScale(size)
+            # dummyNp.hprInterval(2.5, Vec3(360, 0, 0)).loop()
+
+            # Put A Coin On the Floater
+            shape = BulletSphereShape(0.75)
+            coinNode = BulletGhostNode('FloaterCoin-' + str(i))
+            coinNode.addShape(shape)
+            np = self.render.attachNewNode(coinNode)
+            np.setCollideMask(BitMask32.allOff())
+            # np.setPos(randX, randY, 2)
+            np.setPos(randX, randY, 7.0)
+
+            # Adding sphere model
+            sphereNp = loader.loadModel('models/smiley.egg')
+            sphereNp_tex = loader.loadTexture("models/sky/coin_2_tex.jpg")
+            sphereNp.setTexture(sphereNp_tex, 1)
+            sphereNp.reparentTo(np)
+            sphereNp.setScale(0.85)
+            sphereNp.hprInterval(1.5, Vec3(360, 0, 0)).loop()
+
+            self.world.attachGhost(coinNode)
+            self.coins.append(coinNode)
+            print "node name:" + str(coinNode.getName())
+
+    def processContacts(self):
+        for coin in self.coins:
+            self.testWithSingleBody(coin)
+
+        self.coinsCollected = len(self.dictOfCoins)
+
+    def testWithSingleBody(self, secondNode):
+        contactResult = self.world.contactTestPair(self.character, secondNode)
+
+        if contactResult.getNumContacts() > 0:
+            for contact in contactResult.getContacts():
+                cp = contact.getManifoldPoint()
+                node0 = contact.getNode0()
+                node1 = contact.getNode1()
+                self.dictOfCoins[node1.getName()] = 1
+                np = self.render.find(node1.getName())
+                np.node().removeAllChildren()
+                self.world.removeGhost(np.node())
+
 
     def checkIfEccoDied(self):
         print "position" + str(self.pos.getY())
