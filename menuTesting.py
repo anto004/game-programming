@@ -245,10 +245,14 @@ class EccoGame(ShowBase):
     def setupSound(self):
         # Set up sound
         mySound = base.loader.loadSfx("sounds/Farm Morning.ogg")
-        # self.footsteps = base.loader.loadSfx("sounds/Footsteps_on_Cement-Tim_Fryer.wav")
         mySound.play()
         mySound.setVolume(3.0)
         mySound.setLoop(True)
+        footsteps = base.loader.loadSfx("sounds/Footsteps_on_Cement-Tim_Fryer.wav")
+        footsteps.play()
+        footsteps.setVolume(0.8)
+        footsteps.setLoop(True)
+
 
     def setupFloor(self):
         size = Vec3(7.5, 3000, 1.81818)
@@ -372,8 +376,9 @@ class EccoGame(ShowBase):
             speed.setY(0.0)
         else:
             speed.setY(40.0)
+            #self.footsteps.play()
 
-        # self.footsteps.play()
+
         # self.footsteps.setVolume(150)
         # self.character.setAngularMovement(omega)
         self.character.setLinearMovement(speed, True)
@@ -517,31 +522,32 @@ class EccoGame(ShowBase):
 
 
 
-
+    def level2(self):
+        print "level 2"
 
 
 
 
     #level 2
     def level2(self):
-        titleNp = self.aspect2d.find('game-title')
-        titleNp.removeNode()
+        titleNp2 = self.aspect2d.find('game-title')
+        titleNp2.removeNode()
         self.level1Button.destroy()
         self.level2Button.destroy()
 
         # base.setBackgroundColor(0, 0, 0)
         # self.levelScreenDisplay()
-        self.sizescale = 0.6
-        self.setupWorld()
-        self.setupSky()
-        self.setupFloor()
-        self.setupCharacter()
+        self.sizescale2 = 0.6
+        self.setupWorld2()
+        self.setupSky2()
+        self.setupFloor2()
+        self.setupCharacter2()
 
         # self.title = addTitle(" ")
-        self.inst1 = addInstructions(0.95, "[ESC]: Quit")
-        self.inst2 = addInstructions(0.90, "[Left key]: Turn Ecco Left")
-        self.inst3 = addInstructions(0.85, "[Right key]: Turn Ecco Right")
-        self.inst4 = addInstructions(0.80, "[Up key]: Jump Ecco")
+        self.inst12 = addInstructions(0.95, "[ESC]: Quit")
+        self.inst22 = addInstructions(0.90, "[Left key]: Turn Ecco Left")
+        self.inst32 = addInstructions(0.85, "[Right key]: Turn Ecco Right")
+        self.inst42 = addInstructions(0.80, "[Up key]: Jump Ecco")
 
         inputState.watchWithModifiers('esc', 'escape')
         inputState.watchWithModifiers('w', 'w')
@@ -556,10 +562,10 @@ class EccoGame(ShowBase):
         inputState.watchWithModifiers('cam-forward', 'c')
         inputState.watchWithModifiers('cam-backward', 'v')
 
-        taskMgr.add(self.update, "update")
+        taskMgr.add(self.update2, "update")
 
         # Game state variables
-        self.isMoving = False
+        self.isMoving2 = False
 
         # Create a floater object, which floats 2 units above ecco.  We
         # use this as a target for the camera to look at.
@@ -573,33 +579,33 @@ class EccoGame(ShowBase):
 
         # Set up the camera
         self.disableMouse()
-        self.camera.setPos(self.characterNP.getX(), self.characterNP.getY() - 30, 4)
-        self.setupSound()
+        self.camera.setPos(self.characterNP2.getX(), self.characterNP2.getY() - 30, 4)
+        self.setupSound2()
 
         # coins variables
-        self.coinsCollected = 0
-        self.dictOfCoins = {}
-        self.coins = []
+        self.coinsCollected2 = 0
+        self.dictOfCoins2 = {}
+        self.coins2 = []
 
         # Set up Coins as Collectables
-        self.setupCoins()
+        self.setupCoins2()
 
         # Set up Floaters with coins
-        self.setupFloaters()
+        self.setupFloaters2()
 
         # Set up Obstacles
-        self.setupObstacles()
+        self.setupObstacles2()
 
         # Setup Level Display
-        self.setupLevelDisplay()
+        self.setupLevelDisplay2()
 
-        self.counter = 0
+        self.counter2 = 0
 
-    def setupLevelDisplay(self):
-        LEVEL_1 = "Level 2"
-        levelDisplay(LEVEL_1)
+    def setupLevelDisplay2(self):
+        LEVEL_2 = "Level 2"
+        levelDisplay(LEVEL_2)
         levelN = TextNode('level-display')
-        levelN.setText(LEVEL_1)
+        levelN.setText(LEVEL_2)
         # www.webpagepublicity.com
         font = loader.loadFont("font/Caveman.ttf")
         # 'glyphicons-halflings-regular.ttf'
@@ -616,31 +622,31 @@ class EccoGame(ShowBase):
         textNodePath.setPos(-0.3, 0, 0)
         textNodePath.setScale(0.2)
 
-    def update(self, task):
+    def update2(self, task):
         dt = globalClock.getDt()
-        self.pos = self.characterNP.getPos()
-        self.counter = self.counter + 1
-        if self.counter == 150:
+        self.pos2 = self.characterNP2.getPos()
+        self.counter2 = self.counter2 + 1
+        if self.counter2 == 150:
             levelNp = self.aspect2d.find('level-display')
             levelNp.removeNode()
-        self.setUpCamera()
-        self.processInput(dt)
-        self.processContacts()
-        self.coinScoreDisplay()
-        self.checkIfEccoDied()
-        self.world.doPhysics(dt, 10, 1 / 230.0)
+        self.setUpCamera2()
+        self.processInput2(dt)
+        self.processContacts2()
+        self.coinScoreDisplay2()
+        self.checkIfEccoDied2()
+        self.world2.doPhysics(dt, 10, 1 / 230.0)
         return task.cont
 
-    def setupWorld(self):
+    def setupWorld2(self):
         # create bullet world
         self.debugNP = self.render.attachNewNode(BulletDebugNode('Debug'))
         self.debugNP.show()
 
-        self.world = BulletWorld()
-        self.world.setGravity(Vec3(0, 0, -9.81))
-        self.world.setDebugNode(self.debugNP.node())
+        self.world2 = BulletWorld()
+        self.world2.setGravity(Vec3(0, 0, -9.81))
+        self.world2.setDebugNode(self.debugNP.node())
 
-    def setupSky(self):
+    def setupSky2(self):
 
         self.milkyWayNp = render.attachNewNode('milkyway')
         self.milkyWay_2Np = render.attachNewNode('milkyway_2')
@@ -695,10 +701,10 @@ class EccoGame(ShowBase):
         self.mars.setScale(200)
         self.mars.setPos(x + 3000, y + 10000, z + 500)
 
-    def setUpCamera(self):
+    def setUpCamera2(self):
         # If the camera is too far from ecco, move it closer.
         # If the camera is too close to ecco, move it farther.
-        camvec = self.characterNP.getPos() - self.camera.getPos()
+        camvec = self.characterNP2.getPos() - self.camera.getPos()
         camvec.setZ(0.0)
         camdist = camvec.length()
         camvec.normalize()
@@ -709,15 +715,17 @@ class EccoGame(ShowBase):
             self.camera.setPos(self.camera.getPos() - camvec * (35 - camdist))
             camdist = 5.0
 
-    def setupSound(self):
+    def setupSound2(self):
         # Set up sound
         mySound = base.loader.loadSfx("sounds/Farm Morning.ogg")
-        # self.footsteps = base.loader.loadSfx("sounds/Footsteps_on_Cement-Tim_Fryer.wav")
         mySound.play()
         mySound.setVolume(3.0)
         mySound.setLoop(True)
-
-    def setupFloor(self):
+        footsteps = base.loader.loadSfx("sounds/Footsteps_on_Cement-Tim_Fryer.wav")
+        footsteps.play()
+        footsteps.setVolume(0.8)
+        footsteps.setLoop(True)
+    def setupFloor2(self):
         size = Vec3(7.5, 3000, 1.81818)
         shape = BulletBoxShape(size * 0.55)
         # shape = BulletPlaneShape(Vec3(0, 0, 1), 0)
@@ -727,7 +735,7 @@ class EccoGame(ShowBase):
         stairNP = self.render.attachNewNode(node)
         stairNP.setPos(0, 0, 0)
         stairNP.setCollideMask(BitMask32.allOn())
-        self.world.attachRigidBody(stairNP.node())
+        self.world2.attachRigidBody(stairNP.node())
 
         modelNP = loader.loadModel('models/box.egg')
         modelNP.reparentTo(stairNP)
@@ -735,64 +743,61 @@ class EccoGame(ShowBase):
         modelNP.setScale(size)
 
 
-    def setupCharacter(self):
+    def setupCharacter2(self):
         # Character
         h = 1.75
         w = 0.4
         shape = BulletCapsuleShape(w, h - 2 * w, ZUp)
-        self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
-        self.character.setGravity(35)
-        self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setPos(0, 10, 5)
-        self.characterNP.setCollideMask(BitMask32.allOn())
-        self.world.attachCharacter(self.character)
+        self.character2 = BulletCharacterControllerNode(shape, 0.4, 'Player')
+        self.character2.setGravity(35)
+        self.characterNP2 = self.render.attachNewNode(self.character2)
+        self.characterNP2.setPos(0, 10, 5)
+        self.characterNP2.setCollideMask(BitMask32.allOn())
+        self.world2.attachCharacter(self.character2)
 
-        self.ecco = Actor('ralph-models/ralph.egg.pz', {
+        self.ecco2 = Actor('ralph-models/ralph.egg.pz', {
             'run': 'ralph-models/ralph-run.egg',
             'jump': 'ralph/ralph-run.egg',
             'damage': 'models/lack-damage.egg'})
-        self.ecco.reparentTo(self.characterNP)
-        self.ecco.setScale(0.7048)
-        self.ecco.setH(180)
+        self.ecco2.reparentTo(self.characterNP2)
+        self.ecco2.setScale(0.7048)
+        self.ecco2.setH(180)
 
 
-    def processInput(self, dt):
+    def processInput2(self, dt):
         speed = Vec3(0, 0, 0)
         if inputState.isSet('esc'): sys.exit()
         if inputState.isSet('w'): speed.setY(35.0)
         if inputState.isSet('arrow_left'): speed.setX(-35.0)
         if inputState.isSet('arrow_right'): speed.setX(35.0)
-        if inputState.isSet('space'): self.jump()
-        if inputState.isSet('arrow_up'): self.jump()
+        if inputState.isSet('space'): self.jump2()
+        if inputState.isSet('arrow_up'): self.jump2()
         if inputState.isSet('cam-left'): self.camera.setX(self.camera, -20 * dt)
         if inputState.isSet('cam-right'): self.camera.setX(self.camera, +20 * dt)
         if inputState.isSet('cam-forward'): self.camera.setY(self.camera, -200 * dt)
         if inputState.isSet('cam-backward'): self.camera.setY(self.camera, +200 * dt)
 
         # Make Ecco run
-        if self.isMoving is False:
-            self.ecco.loop("run")
-            self.isMoving = True
+        if self.isMoving2 is False:
+            self.ecco2.loop("run")
+            self.isMoving2 = True
 
-        if self.pos.getY() > 1450.0:
+        if self.pos2.getY() > 1450.0:
             speed.setY(0.0)
         else:
             speed.setY(40.0)
 
-        # self.footsteps.play()
-        # self.footsteps.setVolume(150)
-        # self.character.setAngularMovement(omega)
-        self.character.setLinearMovement(speed, True)
+        self.character2.setLinearMovement(speed, True)
 
-    def jump(self):
-        self.character.setMaxJumpHeight(5.0)
-        self.character.setJumpSpeed(25.0)
-        self.character.doJump()
+    def jump2(self):
+        self.character2.setMaxJumpHeight(4.5)
+        self.character2.setJumpSpeed(25.0)
+        self.character2.doJump()
 
-    def setupCoins(self):
+    def setupCoins2(self):
         # display coins = 0
         textN = TextNode('coin-score')
-        textN.setText(str("Coins: " + str(self.coinsCollected)))
+        textN.setText(str("Coins: " + str(self.coinsCollected2)))
         textN.setSlant(0.1)
         textNodePath = self.aspect2d.attachNewNode(textN)
         textNodePath.setPos(0, 0.95, 0.9)
@@ -818,11 +823,11 @@ class EccoGame(ShowBase):
             sphereNp.setScale(0.45)
             sphereNp.hprInterval(2.5, Vec3(360, 0, 0)).loop()
 
-            self.world.attachGhost(coinNode)
-            self.coins.append(coinNode)
+            self.world2.attachGhost(coinNode)
+            self.coins2.append(coinNode)
             print "node name:" + str(coinNode.getName())
 
-    def setupObstacles(self):
+    def setupObstacles2(self):
         # Obstacle
         origin = Point3(2, 0, 0)
         size = Vec3(2, 2.75, 1.5)
@@ -846,7 +851,7 @@ class EccoGame(ShowBase):
             # modelNP.setPos(0, 0, 0)
             modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
             modelNP.setScale(size)
-            self.world.attachRigidBody(ObstacleNP.node())
+            self.world2.attachRigidBody(ObstacleNP.node())
 
         size_2 = Vec3(3, 2.75, 1.5)
         shape2 = BulletBoxShape(size_2 * 0.55)
@@ -868,9 +873,9 @@ class EccoGame(ShowBase):
             # modelNP.setPos(0, 0, 0)
             modelNP.setPos(-size_2.x / 2.0, -size_2.y / 2.0, -size_2.z / 2.0)
             modelNP.setScale(size_2)
-            self.world.attachRigidBody(ObstacleNP.node())
+            self.world2.attachRigidBody(ObstacleNP.node())
 
-    def setupFloaters(self):
+    def setupFloaters2(self):
         size = Vec3(3.5, 5.5, 0.3)
         randNum = random.sample(range(10, 1500, 500), 3)
         for i in range(3):
@@ -885,7 +890,7 @@ class EccoGame(ShowBase):
             # np.setPos(9, 30, 3)
             np.setPos(randX, randY, 6)
             np.setR(0)
-            self.world.attachRigidBody(node)
+            self.world2.attachRigidBody(node)
 
             dummyNp = self.render.attachNewNode('milkyway')
             dummyNp.setPos(randX, randY, 6)
@@ -916,35 +921,35 @@ class EccoGame(ShowBase):
             sphereNp.setScale(0.85)
             sphereNp.hprInterval(1.5, Vec3(360, 0, 0)).loop()
 
-            self.world.attachGhost(coinNode)
-            self.coins.append(coinNode)
+            self.world2.attachGhost(coinNode)
+            self.coins2.append(coinNode)
             print "node name:" + str(coinNode.getName())
 
-    def processContacts(self):
-        for coin in self.coins:
-            self.testWithSingleBody(coin)
+    def processContacts2(self):
+        for coin in self.coins2:
+            self.testWithSingleBody2(coin)
 
-        self.coinsCollected = len(self.dictOfCoins)
+        self.coinsCollected2 = len(self.dictOfCoins2)
 
-    def testWithSingleBody(self, secondNode):
-        contactResult = self.world.contactTestPair(self.character, secondNode)
+    def testWithSingleBody2(self, secondNode):
+        contactResult = self.world2.contactTestPair(self.character2, secondNode)
 
         if contactResult.getNumContacts() > 0:
             for contact in contactResult.getContacts():
                 cp = contact.getManifoldPoint()
                 node0 = contact.getNode0()
                 node1 = contact.getNode1()
-                self.dictOfCoins[node1.getName()] = 1
+                self.dictOfCoins2[node1.getName()] = 1
                 np = self.render.find(node1.getName())
                 np.node().removeAllChildren()
-                self.world.removeGhost(np.node())
+                self.world2.removeGhost(np.node())
 
 
-    def checkIfEccoDied(self):
-        print "position" + str(self.pos.getY())
-        if self.pos.getZ() < -50.0:
+    def checkIfEccoDied2(self):
+        print "position" + str(self.pos2.getY())
+        if self.pos2.getZ() < -50.0:
             sys.exit(1)
-        elif self.pos.getY() > 1300.0:
+        elif self.pos2.getY() > 1300.0:
             title = "Level 1 \n Complete"
             levelCompleteN = TextNode('level-complete')
             font = loader.loadFont("font/Caveman.ttf")
@@ -964,10 +969,10 @@ class EccoGame(ShowBase):
         else:
             pass
 
-    def coinScoreDisplay(self):
+    def coinScoreDisplay2(self):
         textNp = self.aspect2d.find('coin-score')
         textNp.node().clearText()
-        textNp.node().setText(str("Coins: " + str(self.coinsCollected)))
+        textNp.node().setText(str("Coins: " + str(self.coinsCollected2)))
 
 
 
